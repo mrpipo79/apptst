@@ -19,7 +19,7 @@ jobs:
           api-level: 34
           cmdline-tools-version: latest
 
-      - name: Write settings.gradle (pluginManagement only)
+      - name: Write settings.gradle (pluginManagement)
         run: |
           cat > settings.gradle << 'EOF'
           pluginManagement {
@@ -36,19 +36,25 @@ jobs:
       - name: Write root build.gradle (repositories for dependencies)
         run: |
           cat > build.gradle << 'EOF'
-          // Top-level build file
           plugins {
               id 'com.android.application' version '8.2.2' apply false
               id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
           }
-
-          // Repositories for ALL modules
           allprojects {
               repositories {
                   google()
                   mavenCentral()
               }
           }
+          EOF
+
+      - name: Write gradle.properties (enable AndroidX)
+        run: |
+          cat > gradle.properties << 'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          kotlin.code.style=official
           EOF
 
       - name: Build with Gradle 8.2
