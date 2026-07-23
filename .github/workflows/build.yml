@@ -9,6 +9,19 @@ jobs:
         with: {distribution: temurin, java-version: '17'}
       - uses: android-actions/setup-android@v3
         with: {api-level: 34, cmdline-tools-version: latest}
+      - name: Fix plugin repository
+        run: |
+          cat > settings.gradle << 'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          rootProject.name = "ParticleUniverse"
+          include ':app'
+          EOF
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.5
       - run: chmod +x ./gradlew
