@@ -48,13 +48,71 @@ jobs:
           }
           EOF
 
-      - name: Write gradle.properties (enable AndroidX)
+      - name: Write gradle.properties (enable AndroidX + Jetifier)
         run: |
           cat > gradle.properties << 'EOF'
           android.useAndroidX=true
           android.enableJetifier=true
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           kotlin.code.style=official
+          EOF
+
+      - name: Write app/build.gradle (with Material dependency)
+        run: |
+          cat > app/build.gradle << 'EOF'
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
+
+          android {
+              namespace 'com.example.particleuniverse'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "com.example.particleuniverse"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+                  vectorDrawables.useSupportLibrary = true
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled true
+                      shrinkResources true
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                      signingConfig signingConfigs.debug
+                  }
+                  debug {
+                      signingConfig signingConfigs.debug
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+
+              kotlinOptions {
+                  jvmTarget = '1.8'
+              }
+
+              buildFeatures {
+                  viewBinding true
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.core:core-ktx:1.12.0'
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+              implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+              implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+              // Material Components for Theme.MaterialComponents.*
+              implementation 'com.google.android.material:material:1.11.0'
+          }
           EOF
 
       - name: Build with Gradle 8.2
@@ -68,3 +126,4 @@ jobs:
         with:
           name: app-release
           path: app/build/outputs/apk/release/app-release-unsigned.apk
+
