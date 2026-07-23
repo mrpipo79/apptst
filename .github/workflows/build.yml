@@ -118,7 +118,7 @@ jobs:
           }
           EOF
 
-      # ---------- AndroidManifest.xml (fixed icons + no package attr) ----------
+# ---------- AndroidManifest.xml (fixed icons + no package attr) ----------
       - name: Write AndroidManifest.xml
         run: |
           mkdir -p app/src/main
@@ -152,6 +152,10 @@ jobs:
               </application>
           </manifest>
           EOF
+
+      # ---------- Remove problematic adaptive-icon folder ----------
+      - name: Remove mipmap-anydpi-v26 (uses missing color/drawable refs)
+        run: rm -rf app/src/main/res/mipmap-anydpi-v26
 
       # ---------- Build ----------
       - name: Build with Gradle 8.2
