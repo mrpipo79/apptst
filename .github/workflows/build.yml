@@ -19,7 +19,7 @@ jobs:
           api-level: 34
           cmdline-tools-version: latest
 
-      - name: Fix plugin repositories (settings.gradle)
+      - name: Write complete settings.gradle (plugins + dependencies repos)
         run: |
           cat > settings.gradle << 'EOF'
           pluginManagement {
@@ -29,11 +29,18 @@ jobs:
                   gradlePluginPortal()
               }
           }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
           rootProject.name = "ParticleUniverse"
           include ':app'
           EOF
 
-      - name: Build with Gradle 8.2 (no wrapper needed)
+      - name: Build with Gradle 8.2
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 8.2
