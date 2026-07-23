@@ -19,7 +19,7 @@ jobs:
           api-level: 34
           cmdline-tools-version: latest
 
-      - name: Write complete settings.gradle (plugins + dependencies repos)
+      - name: Write settings.gradle (pluginManagement only)
         run: |
           cat > settings.gradle << 'EOF'
           pluginManagement {
@@ -29,15 +29,26 @@ jobs:
                   gradlePluginPortal()
               }
           }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+          rootProject.name = "ParticleUniverse"
+          include ':app'
+          EOF
+
+      - name: Write root build.gradle (repositories for dependencies)
+        run: |
+          cat > build.gradle << 'EOF'
+          // Top-level build file
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+              id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
+          }
+
+          // Repositories for ALL modules
+          allprojects {
               repositories {
                   google()
                   mavenCentral()
               }
           }
-          rootProject.name = "ParticleUniverse"
-          include ':app'
           EOF
 
       - name: Build with Gradle 8.2
