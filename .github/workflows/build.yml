@@ -19,6 +19,7 @@ jobs:
           api-level: 34
           cmdline-tools-version: latest
 
+      # ---------- settings.gradle ----------
       - name: Write settings.gradle (pluginManagement)
         run: |
           cat > settings.gradle << 'EOF'
@@ -33,6 +34,7 @@ jobs:
           include ':app'
           EOF
 
+      # ---------- root build.gradle ----------
       - name: Write root build.gradle (repositories for dependencies)
         run: |
           cat > build.gradle << 'EOF'
@@ -48,6 +50,7 @@ jobs:
           }
           EOF
 
+      # ---------- gradle.properties ----------
       - name: Write gradle.properties (enable AndroidX + Jetifier)
         run: |
           cat > gradle.properties << 'EOF'
@@ -57,6 +60,7 @@ jobs:
           kotlin.code.style=official
           EOF
 
+      # ---------- app/build.gradle ----------
       - name: Write app/build.gradle (with Material dependency)
         run: |
           cat > app/build.gradle << 'EOF'
@@ -110,20 +114,55 @@ jobs:
               implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
               implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
               implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-              // Material Components for Theme.MaterialComponents.*
               implementation 'com.google.android.material:material:1.11.0'
           }
           EOF
 
+      # ---------- AndroidManifest.xml (fixed icons + no package attr) ----------
+      - name: Write AndroidManifest.xml
+        run: |
+          mkdir -p app/src/main
+          cat > app/src/main/AndroidManifest.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools">
+
+              <uses-permission android:name="android.permission.RECORD_AUDIO" />
+              <uses-feature android:name="android.hardware.microphone" android:required="false" />
+              <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.ParticleUniverse">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="sensorLandscape"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:theme="@style/Theme.ParticleUniverse.Fullscreen">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+      # ---------- Build ----------
       - name: Build with Gradle 8.2
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 8.2
           arguments: assembleRelease
 
+      # ---------- Upload ----------
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: app/build/outputs/apk/release/app-release-unsigned.apk
-
